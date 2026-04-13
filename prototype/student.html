@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AskNWrite Student Prototype</title>
+  <style>
+    :root {
+      --bg: #f7f1e8;
+      --bg-deep: #efe4d5;
+      --card: rgba(255, 251, 246, 0.86);
+      --card-strong: #fffaf4;
+      --ink: #1d1a18;
+      --muted: #6c6258;
+      --line: rgba(48, 35, 25, 0.1);
+      --accent: #d65a28;
+      --accent-2: #f19b63;
+      --sage: #75866a;
+      --lavender: #d9d0e6;
+      --shadow: 0 24px 70px rgba(73, 44, 22, 0.12);
+      --chat-shadow: 0 14px 30px rgba(73, 44, 22, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(214, 90, 40, 0.18), transparent 26%),
+        radial-gradient(circle at 100% 0%, rgba(117, 134, 106, 0.16), transparent 28%),
+        linear-gradient(180deg, #fbf6ef 0%, var(--bg) 58%, var(--bg-deep) 100%);
+    }
+
+    body {
+      padding: 18px;
+    }
+
+    .app {
+      min-height: calc(100vh - 36px);
+      max-width: 1120px;
+      margin: 0 auto;
+      border-radius: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(38, 28, 20, 0.07);
+      background: rgba(255, 252, 248, 0.68);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 26px;
+      background: rgba(255, 250, 243, 0.84);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      box-shadow: 0 14px 28px rgba(214, 90, 40, 0.22);
+    }
+
+    .eyebrow {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Noto Serif SC", Georgia, serif;
+      font-size: 27px;
+      line-height: 1;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .view-switch {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .view-switch a,
+    .view-switch span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--ink);
+      background: rgba(40, 30, 20, 0.05);
+    }
+
+    .view-switch .current {
+      background: rgba(214, 90, 40, 0.14);
+      color: #8e3d1b;
+    }
+
+    .hero {
+      padding: 28px 26px 22px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 270px;
+      gap: 18px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255, 251, 246, 0.92), rgba(250, 243, 234, 0.82));
+    }
+
+    .hero-copy h2 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Noto Serif SC", Georgia, serif;
+      font-size: clamp(30px, 4vw, 44px);
+      line-height: 1.04;
+      max-width: 12ch;
+    }
+
+    .hero-copy p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 58ch;
+    }
+
+    .hero-note {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hero-note span {
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(47, 34, 24, 0.06);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .starter {
+      border-radius: 24px;
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 247, 239, 0.9));
+      border: 1px solid rgba(46, 33, 23, 0.08);
+      box-shadow: 0 14px 34px rgba(72, 50, 36, 0.08);
+    }
+
+    .starter .label {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    .input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(55, 40, 28, 0.12);
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--ink);
+      border-radius: 16px;
+      padding: 14px 15px;
+      outline: none;
+      transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(214, 90, 40, 0.45);
+      box-shadow: 0 0 0 4px rgba(214, 90, 40, 0.08);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .chips {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 0;
+      cursor: pointer;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(117, 134, 106, 0.1);
+      color: #495241;
+      transition: transform 180ms ease, background 180ms ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      background: rgba(117, 134, 106, 0.16);
+    }
+
+    .cta-row {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .primary,
+    .secondary,
+    .send {
+      border: 0;
+      cursor: pointer;
+      border-radius: 16px;
+      transition: transform 180ms ease, filter 180ms ease;
+    }
+
+    .primary,
+    .send {
+      padding: 14px 18px;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 16px 30px rgba(214, 90, 40, 0.2);
+      font-weight: 600;
+    }
+
+    .secondary {
+      padding: 14px 18px;
+      background: rgba(33, 23, 17, 0.05);
+      color: var(--ink);
+    }
+
+    .primary:hover,
+    .secondary:hover,
+    .send:hover,
+    .chip:hover {
+      filter: brightness(1.02);
+    }
+
+    .session-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 26px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 252, 247, 0.82);
+    }
+
+    .session-strip.hidden {
+      display: none;
+    }
+
+    .session-title {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: rgba(214, 90, 40, 0.1);
+      color: #8d3d1b;
+    }
+
+    .badge.alt {
+      background: rgba(117, 134, 106, 0.12);
+      color: #4c5845;
+    }
+
+    .strip-note {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .chat {
+      padding: 22px 26px 26px;
+      overflow: auto;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(247, 240, 231, 0.58)),
+        repeating-linear-gradient(
+          180deg,
+          transparent 0,
+          transparent 35px,
+          rgba(138, 117, 96, 0.05) 35px,
+          rgba(138, 117, 96, 0.05) 36px
+        );
+    }
+
+    .message {
+      max-width: 820px;
+      padding: 20px 20px 18px;
+      border-radius: 24px;
+      box-shadow: var(--chat-shadow);
+      animation: rise 220ms ease;
+    }
+
+    .message.agent {
+      background: rgba(255, 251, 246, 0.96);
+      border-top-left-radius: 10px;
+    }
+
+    .message.student {
+      margin-left: auto;
+      max-width: 700px;
+      background: linear-gradient(135deg, rgba(214, 90, 40, 0.95), rgba(241, 155, 99, 0.95));
+      color: white;
+      border-top-right-radius: 10px;
+    }
+
+    .message header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .message.student header {
+      color: rgba(255, 255, 255, 0.8);
+      justify-content: flex-end;
+    }
+
+    .message p {
+      margin: 0;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .bullet-list {
+      margin: 14px 0 0;
+      padding-left: 18px;
+    }
+
+    .bullet-list li {
+      margin: 7px 0;
+      line-height: 1.55;
+    }
+
+    .card {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(117, 134, 106, 0.08);
+      border: 1px solid rgba(117, 134, 106, 0.08);
+    }
+
+    .card.outline {
+      background: rgba(117, 134, 106, 0.08);
+    }
+
+    .card.practice {
+      background: rgba(217, 208, 230, 0.28);
+      border-color: rgba(159, 145, 185, 0.12);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    .card ol,
+    .card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .card p,
+    .card li {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 150px;
+      gap: 12px;
+      align-items: end;
+      padding: 16px 26px 24px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 251, 246, 0.9);
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .hint-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .suggestion {
+      border: 0;
+      cursor: pointer;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(40, 30, 20, 0.05);
+      color: var(--ink);
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 940px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .composer {
+        grid-template-columns: 1fr;
+      }
+
+      .session-strip {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 0;
+      }
+
+      .app {
+        min-height: 100vh;
+        border-radius: 0;
+        border: 0;
+      }
+
+      .topbar,
+      .hero,
+      .chat,
+      .composer,
+      .session-strip {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .message {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">AW</div>
+        <div>
+          <p class="eyebrow">Student View</p>
+          <h1>AskNWrite</h1>
+          <p>像聊天一样练作文，但每一步都在帮你学会自己写。</p>
+        </div>
+      </div>
+      <div class="view-switch">
+        <span class="current">学生端</span>
+        <a href="./index.html">观察端</a>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Chat-First Writing Coach</p>
+        <h2>不是替你写， 是陪你把思路想清楚。</h2>
+        <p>
+          你只需要告诉我作文题目。接下来我会像一个耐心的写作教练，一次只问你 1 到 3 个问题，
+          帮你从题目走到提纲，再走到关键段落。你写得越多，我提示得越少。
+        </p>
+        <div class="hero-note">
+          <span>先审题，再下笔</span>
+          <span>不给整篇范文</span>
+          <span>会生成思路卡</span>
+        </div>
+      </div>
+
+      <div class="starter">
+        <div class="label">开始一次训练</div>
+        <input id="titleInput" class="input" value="那一次，我真感动" />
+        <div class="grid-2">
+          <select id="ageInput">
+            <option value="10">10 岁</option>
+            <option value="12">12 岁</option>
+            <option value="14" selected>14 岁</option>
+            <option value="15">15 岁</option>
+          </select>
+          <select id="levelInput">
+            <option value="beginner">初学</option>
+            <option value="developing" selected>发展中</option>
+            <option value="proficient">熟练</option>
+          </select>
+        </div>
+        <div class="chips">
+          <button class="chip" data-title="我的老师">我的老师</button>
+          <button class="chip" data-title="难忘的一天">难忘的一天</button>
+          <button class="chip" data-title="我读懂了坚持">我读懂了坚持</button>
+        </div>
+        <div class="cta-row">
+          <button id="startButton" class="primary">开始对话训练</button>
+          <button id="resetButton" class="secondary">重置示例</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="sessionStrip" class="session-strip hidden">
+      <div class="session-title">
+        <span class="badge" id="stageBadge">审题中</span>
+        <span class="badge alt" id="guidanceBadge">半放手</span>
+        <span class="strip-note" id="stripNote">先说清楚题目里最关键的一件事。</span>
+      </div>
+      <div class="strip-note" id="titleBadge">作文题目：那一次，我真感动</div>
+    </section>
+
+    <main id="chat" class="chat"></main>
+
+    <footer class="composer">
+      <div>
+        <textarea id="replyInput" placeholder="把你现在想到的内容告诉我。比如：我想写运动会那天摔倒后，同学扶我起来。"></textarea>
+        <div class="hint-row">
+          <span>像平时聊天一样回答就行，不用一上来写得很完整。</span>
+          <div class="suggestions">
+            <button class="suggestion" data-reply="我想写运动会那天摔倒后，同学扶我起来。">给一个方向</button>
+            <button class="suggestion" data-reply="我只想到一点点，不知道怎么写。">我卡住了</button>
+            <button class="suggestion" data-reply="直接帮我写一篇吧。">试探代写</button>
+          </div>
+        </div>
+      </div>
+      <button id="sendButton" class="send">发送</button>
+    </footer>
+  </div>
+
+  <script>
+    const STAGES = [
+      {
+        key: "topic",
+        badge: "审题中",
+        note: "先说清楚题目里最关键的一件事。"
+      },
+      {
+        key: "idea",
+        badge: "立意中",
+        note: "把你真正想表达的话缩成一句中心句。"
+      },
+      {
+        key: "material",
+        badge: "选材中",
+        note: "只保留最能支撑主题的 1 到 3 个片段。"
+      },
+      {
+        key: "structure",
+        badge: "整理提纲",
+        note: "我会把你的回答整理成思路卡。"
+      },
+      {
+        key: "draft",
+        badge: "起草关键段",
+        note: "先写最关键的一段，不求一次写完整篇。"
+      },
+      {
+        key: "feedback",
+        badge: "一起修改",
+        note: "先改切题和具体，再看语言。"
+      },
+      {
+        key: "review",
+        badge: "复盘完成",
+        note: "记住方法，下次就能更独立。"
+      }
+    ];
+
+    const DOM = {
+      titleInput: document.getElementById("titleInput"),
+      ageInput: document.getElementById("ageInput"),
+      levelInput: document.getElementById("levelInput"),
+      startButton: document.getElementById("startButton"),
+      resetButton: document.getElementById("resetButton"),
+      chips: document.querySelectorAll(".chip"),
+      suggestions: document.querySelectorAll(".suggestion"),
+      sessionStrip: document.getElementById("sessionStrip"),
+      stageBadge: document.getElementById("stageBadge"),
+      guidanceBadge: document.getElementById("guidanceBadge"),
+      stripNote: document.getElementById("stripNote"),
+      titleBadge: document.getElementById("titleBadge"),
+      chat: document.getElementById("chat"),
+      replyInput: document.getElementById("replyInput"),
+      sendButton: document.getElementById("sendButton")
+    };
+
+    const state = {
+      started: false,
+      stageIndex: 0,
+      title: DOM.titleInput.value,
+      age: Number(DOM.ageInput.value),
+      level: DOM.levelInput.value,
+      dependencyScore: 0.58,
+      messages: [],
+      outline: [],
+      feedback: []
+    };
+
+    function guidanceLabel() {
+      if (state.dependencyScore >= 0.7) return "强引导";
+      if (state.dependencyScore >= 0.45) return "半放手";
+      return "弱引导";
+    }
+
+    function inferGenre() {
+      if (state.title.includes("那一次") || state.title.includes("难忘")) return "记事";
+      if (state.title.includes("老师") || state.title.includes("妈妈") || state.title.includes("同学")) return "写人";
+      if (state.title.includes("春天") || state.title.includes("校园")) return "写景";
+      return "命题作文";
+    }
+
+    function questionsFor(stageKey) {
+      const younger = state.age <= 12;
+      const map = {
+        topic: younger
+          ? ["题目里最重要的人、事或景物是谁？", "最关键的瞬间发生在什么时候？"]
+          : ["这道题最想让你表达的核心主题是什么？", "你准备通过哪一个片段承载它？"],
+        idea: younger
+          ? ["把你想表达的意思先缩成一句简单的话。", "你最想让老师记住哪种感受？"]
+          : ["把中心句压缩成一句完整判断。", "你的情感或认识变化是什么？"],
+        material: younger
+          ? ["把事情按开始、变化、结果说三步。", "最关键的画面里你看到什么？"]
+          : ["列出 2 到 3 个最能支撑中心的片段。", "哪个片段最适合展开细节？"],
+        structure: ["我先帮你整理思路卡，你看看有没有跑题。"],
+        draft: younger
+          ? ["先写两三句，交代背景后立刻进入关键动作。"]
+          : ["先写最关键的一段，尽量用细节代替空话。"],
+        feedback: ["回头看一遍，哪一句最像空话？", "哪一段和题目联系最弱？"],
+        review: ["这次你学会的一个方法是什么？", "下次你准备先自己试哪一步？"]
+      };
+      return map[stageKey];
+    }
+
+    function buildIntro() {
+      return [
+        {
+          role: "agent",
+          title: "AskNWrite",
+          text: `这是一道偏“${inferGenre()}”的题目。今天我不会直接给你整篇范文，我会像教练一样一步一步问你，让你自己把思路想出来。`,
+          bullets: questionsFor("topic"),
+          cards: [
+            {
+              type: "practice",
+              title: "这一轮只做一件事",
+              items: ["先不要写全文，只用一句话告诉我你想写什么。"]
+            }
+          ]
+        }
+      ];
+    }
+
+    function createOutline() {
+      const studentTexts = state.messages.filter(item => item.role === "student").map(item => item.text);
+      const first = studentTexts[0] || "交代题目场景";
+      const second = studentTexts[1] || "展开关键片段";
+      state.outline = [
+        `开头：点出题目“${state.title}”，带出场景。`,
+        `中间：重点写“${first.slice(0, 24)}”。`,
+        `补充：加入“${second.slice(0, 24)}”，让情节更完整。`,
+        "结尾：总结感受，再回到题目。"
+      ];
+    }
+
+    function createFeedback(text) {
+      const notes = [];
+      if (text.length < 24) notes.push("这段有点短，再补一个动作、一个画面或一句心里话。");
+      if (["我很感动", "非常有意义", "我学到了很多", "这让我难忘"].some(key => text.includes(key))) {
+        notes.push("这里有点像空话，试着换成具体细节。");
+      }
+      const keyChars = state.title.split("").filter(ch => ch.trim()).slice(0, 4);
+      if (!keyChars.some(ch => text.includes(ch))) {
+        notes.push("这段和题目联系还不够紧，可以把题目关键词写回句子里。");
+      }
+      state.feedback = notes.length ? notes : ["这一段已经比较切题，下一步重点是让段落连接更自然。"];
+    }
+
+    function cardsFor(stageKey) {
+      if (stageKey === "structure" || stageKey === "draft") {
+        return [
+          {
+            type: "outline",
+            title: "思路卡",
+            items: state.outline
+          },
+          {
+            type: "practice",
+            title: "下一步",
+            items: [stageKey === "structure" ? "看一遍这张思路卡，然后告诉我哪里最值得展开。" : "现在先写最关键的一段，不求完整，但要具体。"]
+          }
+        ];
+      }
+
+      if (stageKey === "feedback") {
+        return [
+          {
+            type: "practice",
+            title: "修改建议",
+            items: state.feedback
+          }
+        ];
+      }
+
+      if (stageKey === "review") {
+        return [
+          {
+            type: "practice",
+            title: "你已经完成这一轮",
+            items: [
+              "下次先自己列提纲，再把提纲给我检查。",
+              "你写得越独立，我会给的提示越少。"
+            ]
+          }
+        ];
+      }
+
+      return [];
+    }
+
+    function addMessage(message) {
+      state.messages.push(message);
+      renderChat();
+    }
+
+    function renderChat() {
+      DOM.chat.innerHTML = "";
+      state.messages.forEach(message => {
+        const article = document.createElement("article");
+        article.className = `message ${message.role}`;
+
+        const bullets = message.bullets && message.bullets.length
+          ? `<ul class="bullet-list">${message.bullets.map(item => `<li>${item}</li>`).join("")}</ul>`
+          : "";
+
+        const cards = message.cards && message.cards.length
+          ? message.cards.map(card => {
+              const listTag = card.items.length > 1 ? "ol" : "ul";
+              return `
+                <div class="card ${card.type}">
+                  <h3>${card.title}</h3>
+                  <${listTag}>
+                    ${card.items.map(item => `<li>${item}</li>`).join("")}
+                  </${listTag}>
+                </div>
+              `;
+            }).join("")
+          : "";
+
+        article.innerHTML = `
+          <header>${message.role === "agent" ? message.title : "Student"}</header>
+          <p>${message.text}</p>
+          ${bullets}
+          ${cards}
+        `;
+        DOM.chat.appendChild(article);
+      });
+      DOM.chat.scrollTop = DOM.chat.scrollHeight;
+    }
+
+    function renderStrip() {
+      const stage = STAGES[state.stageIndex];
+      DOM.sessionStrip.classList.toggle("hidden", !state.started);
+      DOM.stageBadge.textContent = stage.badge;
+      DOM.guidanceBadge.textContent = guidanceLabel();
+      DOM.stripNote.textContent = stage.note;
+      DOM.titleBadge.textContent = `作文题目：${state.title}`;
+    }
+
+    function resetSession() {
+      state.started = false;
+      state.stageIndex = 0;
+      state.title = "那一次，我真感动";
+      state.age = 14;
+      state.level = "developing";
+      state.dependencyScore = 0.58;
+      state.messages = [];
+      state.outline = [];
+      state.feedback = [];
+      DOM.titleInput.value = state.title;
+      DOM.ageInput.value = "14";
+      DOM.levelInput.value = "developing";
+      renderStrip();
+      renderChat();
+    }
+
+    function startSession() {
+      state.started = true;
+      state.stageIndex = 0;
+      state.title = DOM.titleInput.value.trim() || "那一次，我真感动";
+      state.age = Number(DOM.ageInput.value);
+      state.level = DOM.levelInput.value;
+      state.dependencyScore = state.level === "beginner" ? 0.8 : state.level === "developing" ? 0.58 : 0.34;
+      state.messages = [];
+      state.outline = [];
+      state.feedback = [];
+      buildIntro().forEach(addMessage);
+      renderStrip();
+    }
+
+    function blockGhostwriteRequest() {
+      createOutline();
+      addMessage({
+        role: "agent",
+        title: "AskNWrite",
+        text: "我不会直接替你交作业，但我可以马上把你的思路整理成一张思路卡，你只要先写其中一段就行。",
+        cards: [
+          {
+            type: "outline",
+            title: "思路卡",
+            items: state.outline
+          },
+          {
+            type: "practice",
+            title: "现在试试这一步",
+            items: ["先自己写 2 到 3 句，我再帮你改得更具体、更切题。"]
+          }
+        ]
+      });
+    }
+
+    function advanceStage() {
+      if (state.stageIndex < STAGES.length - 1) {
+        state.stageIndex += 1;
+      }
+      if (STAGES[state.stageIndex].key === "review") {
+        state.dependencyScore = Math.max(0.22, state.dependencyScore - 0.14);
+      }
+      renderStrip();
+    }
+
+    function nextAgentTurn(studentText) {
+      const current = STAGES[state.stageIndex].key;
+
+      if (studentText.includes("直接帮我写") || studentText.includes("给我范文")) {
+        blockGhostwriteRequest();
+        return;
+      }
+
+      if (current === "material" || current === "structure") {
+        createOutline();
+      }
+
+      if (current === "draft" || current === "feedback") {
+        createFeedback(studentText);
+      }
+
+      advanceStage();
+      const next = STAGES[state.stageIndex].key;
+
+      const leadText = {
+        idea: "好，我们先别着急展开。现在请把你真正想表达的话，缩成一句清楚的中心句。",
+        material: "中心差不多有了。接下来只选最有用的材料，不要把所有事情都写进去。",
+        structure: "我先把你前面的回答整理成一张思路卡，你看一眼，确认有没有跑题。",
+        draft: "思路已经比较清楚了。现在只写最关键的一段，像聊天一样写真实细节就行。",
+        feedback: "你已经开始动笔了。现在我们只改最关键的问题，不追求一次改完。",
+        review: "这一轮已经完成。最后我们只复盘方法，看看你下次能不能更独立一点。"
+      }[next];
+
+      addMessage({
+        role: "agent",
+        title: "AskNWrite",
+        text: leadText,
+        bullets: next === "structure" ? [] : questionsFor(next),
+        cards: cardsFor(next)
+      });
+    }
+
+    function submitReply() {
+      const text = DOM.replyInput.value.trim();
+      if (!text) return;
+      if (!state.started) {
+        startSession();
+      }
+      DOM.replyInput.value = "";
+      addMessage({
+        role: "student",
+        text,
+        bullets: [],
+        cards: []
+      });
+      nextAgentTurn(text);
+    }
+
+    DOM.startButton.addEventListener("click", startSession);
+    DOM.resetButton.addEventListener("click", resetSession);
+    DOM.sendButton.addEventListener("click", submitReply);
+    DOM.replyInput.addEventListener("keydown", event => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+        submitReply();
+      }
+    });
+
+    DOM.chips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        DOM.titleInput.value = chip.dataset.title;
+      });
+    });
+
+    DOM.suggestions.forEach(button => {
+      button.addEventListener("click", () => {
+        DOM.replyInput.value = button.dataset.reply;
+        DOM.replyInput.focus();
+      });
+    });
+
+    resetSession();
+    addMessage({
+      role: "agent",
+      title: "AskNWrite",
+      text: "把作文题目告诉我，我们就开始。你不用一开始就写得很完整，我会一步一步陪你把思路想清楚。",
+      bullets: [
+        "先输入题目，再开始训练。",
+        "如果卡住了，可以直接说“我只想到一点点”。",
+        "我会给你思路卡，但不会直接给整篇范文。"
+      ],
+      cards: [
+        {
+          type: "practice",
+          title: "你会看到的方式",
+          items: ["主要是对话，偶尔插入提纲卡、修改卡和下一步任务。"]
+        }
+      ]
+    });
+  </script>
+</body>
+</html>

@@ -35,11 +35,15 @@ python3 -m writing_agent.cli
 
 ## 前端原型
 
-已新增一个粗糙前端 demo，可直接打开：
+已新增两套粗糙前端 demo：
 
 ```bash
 open prototype/index.html
+open prototype/student.html
 ```
+
+- `prototype/index.html`：教师 / 观察端工作台
+- `prototype/student.html`：学生端聊天界面
 
 如果想用本地静态服务器查看：
 
@@ -47,7 +51,10 @@ open prototype/index.html
 python3 -m http.server 8000
 ```
 
-然后访问 `http://localhost:8000/prototype/index.html`。
+然后访问：
+
+- `http://localhost:8000/prototype/index.html`
+- `http://localhost:8000/prototype/student.html`
 
 ## 运行测试
 
