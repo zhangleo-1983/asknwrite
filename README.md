@@ -33,6 +33,22 @@ tests/
 python3 -m writing_agent.cli
 ```
 
+## 前端原型
+
+已新增一个粗糙前端 demo，可直接打开：
+
+```bash
+open prototype/index.html
+```
+
+如果想用本地静态服务器查看：
+
+```bash
+python3 -m http.server 8000
+```
+
+然后访问 `http://localhost:8000/prototype/index.html`。
+
 ## 运行测试
 
 ```bash

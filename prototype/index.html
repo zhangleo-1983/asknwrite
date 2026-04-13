@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AskNWrite Prototype</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --panel: rgba(252, 248, 241, 0.92);
+      --panel-strong: #fffaf2;
+      --ink: #1d1a18;
+      --muted: #6b6258;
+      --line: rgba(41, 28, 19, 0.12);
+      --accent: #d35d2c;
+      --accent-soft: rgba(211, 93, 44, 0.12);
+      --accent-deep: #5f2d1f;
+      --sage: #7c8c63;
+      --gold: #c7a24f;
+      --shadow: 0 20px 60px rgba(66, 39, 20, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(211, 93, 44, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(124, 140, 99, 0.18), transparent 32%),
+        linear-gradient(180deg, #f9f3ea 0%, var(--bg) 100%);
+      color: var(--ink);
+      font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      padding: 24px;
+    }
+
+    .shell {
+      min-height: calc(100vh - 48px);
+      border: 1px solid rgba(29, 26, 24, 0.08);
+      background: rgba(255, 251, 245, 0.78);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr) 360px;
+      overflow: hidden;
+      border-radius: 28px;
+    }
+
+    .rail,
+    .inspector {
+      padding: 28px;
+      border-right: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255, 250, 242, 0.95), rgba(249, 241, 231, 0.88));
+    }
+
+    .inspector {
+      border-right: 0;
+      border-left: 1px solid var(--line);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-width: 0;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(250, 246, 239, 0.84)),
+        repeating-linear-gradient(
+          180deg,
+          transparent 0,
+          transparent 34px,
+          rgba(125, 107, 88, 0.05) 34px,
+          rgba(125, 107, 88, 0.05) 35px
+        );
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #ef9158);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      box-shadow: 0 12px 30px rgba(211, 93, 44, 0.28);
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+
+    .brand h1,
+    .workspace h2,
+    .inspector h2 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Noto Serif SC", Georgia, serif;
+      font-weight: 600;
+    }
+
+    .brand h1 {
+      font-size: 25px;
+      line-height: 1.05;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .status-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(95, 45, 31, 0.08);
+      color: var(--accent-deep);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .control-block,
+    .skill-block,
+    .progress-block {
+      margin-bottom: 24px;
+    }
+
+    .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .title-input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    .title-input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(59, 43, 32, 0.12);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      border-radius: 16px;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .title-input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(211, 93, 44, 0.48);
+      box-shadow: 0 0 0 4px rgba(211, 93, 44, 0.08);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .start-button,
+    .send-button,
+    .ghost-button {
+      border: 0;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform 180ms ease, filter 180ms ease;
+    }
+
+    .start-button,
+    .send-button {
+      background: linear-gradient(135deg, var(--accent), #ef9158);
+      color: white;
+      padding: 14px 16px;
+      font-weight: 600;
+      box-shadow: 0 14px 30px rgba(211, 93, 44, 0.22);
+    }
+
+    .ghost-button {
+      background: rgba(29, 26, 24, 0.05);
+      color: var(--ink);
+      padding: 12px 16px;
+    }
+
+    .start-button:hover,
+    .send-button:hover,
+    .ghost-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+    }
+
+    .stage-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stage-item {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.48);
+      border: 1px solid rgba(32, 23, 18, 0.05);
+      transition: transform 200ms ease, background 200ms ease;
+    }
+
+    .stage-item.active {
+      background: linear-gradient(135deg, rgba(211, 93, 44, 0.12), rgba(239, 145, 88, 0.08));
+      transform: translateX(6px);
+      border-color: rgba(211, 93, 44, 0.18);
+    }
+
+    .stage-item strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .stage-item span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(95, 45, 31, 0.06);
+      color: var(--accent-deep);
+      font-size: 12px;
+    }
+
+    .meter {
+      width: 100%;
+      height: 10px;
+      background: rgba(29, 26, 24, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .meter > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--sage), var(--gold));
+      border-radius: inherit;
+      transition: width 240ms ease;
+    }
+
+    .workspace-head {
+      padding: 28px 28px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .workspace-head p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 620px;
+      line-height: 1.6;
+    }
+
+    .head-stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .head-chip {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(52, 39, 29, 0.06);
+      min-width: 112px;
+    }
+
+    .head-chip strong {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .head-chip span {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .conversation {
+      padding: 22px 28px 32px;
+      overflow: auto;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .message {
+      max-width: 86%;
+      padding: 18px 18px 16px;
+      border-radius: 22px;
+      position: relative;
+      animation: rise 260ms ease;
+    }
+
+    .message.agent {
+      background: rgba(255, 251, 244, 0.95);
+      border-top-left-radius: 8px;
+      box-shadow: 0 12px 24px rgba(77, 56, 42, 0.08);
+    }
+
+    .message.student {
+      margin-left: auto;
+      background: linear-gradient(135deg, rgba(211, 93, 44, 0.92), rgba(239, 145, 88, 0.92));
+      color: white;
+      border-top-right-radius: 8px;
+      box-shadow: 0 14px 26px rgba(211, 93, 44, 0.2);
+    }
+
+    .message header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .message.student header {
+      color: rgba(255, 255, 255, 0.78);
+      justify-content: flex-end;
+    }
+
+    .message p {
+      margin: 0 0 10px;
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .message ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: inherit;
+    }
+
+    .message li {
+      margin: 6px 0;
+      line-height: 1.55;
+    }
+
+    .message .subtle {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .composer {
+      border-top: 1px solid var(--line);
+      padding: 18px 28px 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 160px;
+      gap: 14px;
+      align-items: end;
+      background: rgba(255, 252, 246, 0.72);
+    }
+
+    textarea {
+      min-height: 98px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .inspector section {
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      border-radius: 22px;
+      background: rgba(255, 253, 249, 0.86);
+      border: 1px solid rgba(38, 28, 21, 0.06);
+      padding: 18px;
+      box-shadow: 0 10px 28px rgba(81, 52, 31, 0.06);
+    }
+
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+
+    .panel p,
+    .panel li {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .outline-list,
+    .feedback-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .feedback-list li::marker {
+      color: var(--accent);
+    }
+
+    .practice-note {
+      padding: 16px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(124, 140, 99, 0.14), rgba(199, 162, 79, 0.08));
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .mini-legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .fade {
+      color: var(--muted);
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .shell {
+        grid-template-columns: 280px minmax(0, 1fr);
+      }
+
+      .inspector {
+        display: none;
+      }
+    }
+
+    @media (max-width: 860px) {
+      body {
+        padding: 12px;
+      }
+
+      .shell {
+        min-height: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .rail {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .workspace {
+        min-height: 75vh;
+      }
+
+      .workspace-head,
+      .composer {
+        grid-template-columns: 1fr;
+      }
+
+      .message {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <div class="brand">
+        <div style="display:flex; gap:14px; align-items:center;">
+          <div class="brand-mark">AW</div>
+          <div>
+            <p class="eyebrow">Writing Coach</p>
+            <h1>AskNWrite</h1>
+            <p>训练型作文 Agent，目标不是代写，而是帮学生学会自己写。</p>
+          </div>
+        </div>
+        <div class="status-pill">Prototype</div>
+      </div>
+
+      <div class="control-block">
+        <div class="label">作文标题</div>
+        <input id="titleInput" class="title-input" value="那一次，我真感动" />
+      </div>
+
+      <div class="grid-2 control-block">
+        <div>
+          <div class="label">年龄</div>
+          <select id="ageInput">
+            <option value="10">10 岁</option>
+            <option value="12">12 岁</option>
+            <option value="14">14 岁</option>
+            <option value="15">15 岁</option>
+          </select>
+        </div>
+        <div>
+          <div class="label">水平</div>
+          <select id="levelInput">
+            <option value="beginner">初学</option>
+            <option value="developing" selected>发展中</option>
+            <option value="proficient">熟练</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2 control-block">
+        <button id="startButton" class="start-button">开始训练</button>
+        <button id="demoButton" class="ghost-button">载入高中龄示例</button>
+      </div>
+
+      <div class="progress-block">
+        <div class="label">训练阶段</div>
+        <div id="stageList" class="stage-list"></div>
+      </div>
+
+      <div class="skill-block">
+        <div class="label">能力标签</div>
+        <div class="skill-tags">
+          <span class="tag">审题准确</span>
+          <span class="tag">材料具体</span>
+          <span class="tag">结构清楚</span>
+          <span class="tag">情感表达</span>
+          <span class="tag">独立完成度</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="label">脱离 Agent 指标</div>
+        <div class="meter"><span id="dependencyBar" style="width: 72%;"></span></div>
+        <p class="fade" id="dependencyText" style="margin:10px 0 0; font-size:13px;">当前提示依赖度较高，系统会先强引导。</p>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="workspace-head">
+        <div>
+          <p class="eyebrow">Session Workspace</p>
+          <h2 id="workspaceTitle">从题目到提纲，再到独立成文</h2>
+          <p id="workspaceSummary">先把题目想清楚，再开始写。前端原型展示的是训练工作台，不是直接出范文的聊天框。</p>
+        </div>
+        <div class="head-stats">
+          <div class="head-chip">
+            <strong>当前阶段</strong>
+            <span id="stageStat">审题</span>
+          </div>
+          <div class="head-chip">
+            <strong>引导强度</strong>
+            <span id="guidanceStat">半放手</span>
+          </div>
+          <div class="head-chip">
+            <strong>作文长度目标</strong>
+            <span id="lengthStat">500 字</span>
+          </div>
+        </div>
+      </header>
+
+      <section id="conversation" class="conversation"></section>
+
+      <footer class="composer">
+        <textarea id="replyInput" placeholder="输入学生回答，例如：我想写运动会那天摔倒后，同学扶我起来。"></textarea>
+        <button id="sendButton" class="send-button">提交这一步</button>
+      </footer>
+    </main>
+
+    <aside class="inspector">
+      <section>
+        <p class="eyebrow">Thinking Map</p>
+        <h2>作文思维地图</h2>
+      </section>
+
+      <section class="panel">
+        <h3>题目解析</h3>
+        <p id="analysisPanel">系统会先用学生可理解的语言拆题：写什么、重点写谁、容易跑题点是什么。</p>
+      </section>
+
+      <section class="panel">
+        <h3>结构草图</h3>
+        <ol id="outlinePanel" class="outline-list">
+          <li>等待学生先给出题目方向。</li>
+          <li>再根据回答整理成开头、关键片段、结尾。</li>
+        </ol>
+      </section>
+
+      <section class="panel">
+        <h3>即时反馈</h3>
+        <ul id="feedbackPanel" class="feedback-list">
+          <li>还没有反馈，先让学生说出自己的材料。</li>
+        </ul>
+      </section>
+
+      <section class="practice-note" id="practicePanel">
+        练习任务会显示在这里。原则是一次只推进一个认知台阶，不让学生直接索要全文。
+      </section>
+
+      <section>
+        <div class="mini-legend">
+          <span><span class="dot" style="background: var(--accent);"></span>Agent 引导</span>
+          <span><span class="dot" style="background: var(--sage);"></span>结构沉淀</span>
+          <span><span class="dot" style="background: var(--gold);"></span>脱离辅助</span>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    const STAGES = [
+      { key: "topic", label: "审题", detail: "先搞清楚写什么，题目重点在哪。" },
+      { key: "idea", label: "立意", detail: "把想表达的意思压成一句中心句。" },
+      { key: "material", label: "选材", detail: "只留下最能支撑主题的片段。" },
+      { key: "structure", label: "结构", detail: "把材料排出顺序，形成提纲。" },
+      { key: "draft", label: "起草", detail: "先写最关键的一段，不追求全文。" },
+      { key: "feedback", label: "反馈", detail: "先看切题和具体，再看语言。" },
+      { key: "review", label: "复盘", detail: "把方法记住，准备减少提示。" }
+    ];
+
+    const DOM = {
+      titleInput: document.getElementById("titleInput"),
+      ageInput: document.getElementById("ageInput"),
+      levelInput: document.getElementById("levelInput"),
+      startButton: document.getElementById("startButton"),
+      demoButton: document.getElementById("demoButton"),
+      stageList: document.getElementById("stageList"),
+      dependencyBar: document.getElementById("dependencyBar"),
+      dependencyText: document.getElementById("dependencyText"),
+      workspaceTitle: document.getElementById("workspaceTitle"),
+      workspaceSummary: document.getElementById("workspaceSummary"),
+      stageStat: document.getElementById("stageStat"),
+      guidanceStat: document.getElementById("guidanceStat"),
+      lengthStat: document.getElementById("lengthStat"),
+      conversation: document.getElementById("conversation"),
+      replyInput: document.getElementById("replyInput"),
+      sendButton: document.getElementById("sendButton"),
+      analysisPanel: document.getElementById("analysisPanel"),
+      outlinePanel: document.getElementById("outlinePanel"),
+      feedbackPanel: document.getElementById("feedbackPanel"),
+      practicePanel: document.getElementById("practicePanel")
+    };
+
+    const state = {
+      stageIndex: 0,
+      title: DOM.titleInput.value,
+      age: Number(DOM.ageInput.value),
+      level: DOM.levelInput.value,
+      dependencyScore: 0.72,
+      messages: [],
+      outline: [],
+      feedback: [],
+      currentTask: ""
+    };
+
+    function getGuidanceLabel() {
+      if (state.dependencyScore >= 0.7) return "强引导";
+      if (state.dependencyScore >= 0.45) return "半放手";
+      return "弱引导";
+    }
+
+    function getTargetLength() {
+      return state.age <= 12 ? 400 : 600;
+    }
+
+    function inferGenre(title) {
+      if (title.includes("那一次") || title.includes("难忘")) return "记事";
+      if (title.includes("老师") || title.includes("妈妈") || title.includes("同学")) return "写人";
+      if (title.includes("春天") || title.includes("校园")) return "写景";
+      return "命题作文";
+    }
+
+    function stageQuestions(stageKey) {
+      const younger = state.age <= 12;
+      const questions = {
+        topic: younger
+          ? ["题目里最重要的人、事或景物是谁？", "最关键的那个瞬间发生在什么时候？", "如果只能写一件事，你会选哪一件？"]
+          : ["这道题真正的核心主题是什么？", "题目中哪几个词不能偏掉？", "你准备用哪一个片段承载主题？"],
+        idea: younger
+          ? ["把你想表达的意思先缩成一句简单的话。", "你最想让老师记住哪种感受？"]
+          : ["请把中心句压缩成一句完整判断。", "你的情感或认识变化是什么？"],
+        material: younger
+          ? ["把事情按开始、变化、结果说三步。", "最关键的画面里你看到了什么？"]
+          : ["列出 2 到 3 个最能支撑中心的片段。", "哪个片段最适合展开细节？"],
+        structure: younger
+          ? ["把结构分成开头、经过、结果三部分，每部分写一句。", "哪一段最值得写长一点？"]
+          : ["先独立列一个三段或五段提纲。", "结尾准备怎样扣回题目？"],
+        draft: younger
+          ? ["先写两三句，交代背景后立刻进入关键动作。", "少讲道理，多写动作和表情。"]
+          : ["先写最关键的一段，突出转折或认识变化。", "尽量让细节代替空泛表态。"],
+        feedback: ["回头看一遍，哪一句最像空话？", "哪一段和题目联系最弱？"],
+        review: ["这次你学会的一个方法是什么？", "下次你准备先自己试哪一步？"]
+      };
+      return questions[stageKey];
+    }
+
+    function buildAnalysis() {
+      const genre = inferGenre(state.title);
+      const ageHint = state.age <= 12 ? "时间顺序和具体细节" : "中心、转折和情感深化";
+      const stage = STAGES[state.stageIndex].key;
+      if (stage === "topic") {
+        return `这是一道偏“${genre}”的题目。先别急着写全文，先找到一个具体切口，再围绕它组织材料，重点关注${ageHint}。`;
+      }
+      if (stage === "idea") return "进入立意阶段，把想说的话压成一句学生自己也能记住的中心句。";
+      if (stage === "material") return "进入选材阶段，不追求材料多，而是追求材料准。只保留能证明主题的 1 到 3 个片段。";
+      if (stage === "structure") return "现在开始整理结构，把零散回答变成可直接下笔的提纲。";
+      if (stage === "draft") return "开始局部起草，先写关键段，不要求一口气写完整篇。";
+      if (stage === "feedback") return "反馈顺序固定为切题、具体、连贯、语言，每次只改最关键的几个点。";
+      return "复盘阶段只问方法，不代替学生完成作文。目标是下一次更少依赖 Agent。";
+    }
+
+    function buildOutlineFromMessages() {
+      const studentLines = state.messages.filter(msg => msg.role === "student").map(msg => msg.text);
+      const first = studentLines[0] || "交代作文场景";
+      const second = studentLines[1] || "展开关键片段";
+      state.outline = [
+        `开头：点出题目“${state.title}”，带出场景。`,
+        `中间：重点展开“${first.slice(0, 24)}”。`,
+        `过渡：补充“${second.slice(0, 24)}”，让情节更完整。`,
+        "结尾：总结感受，再回应题目。"
+      ];
+    }
+
+    function buildFeedback(text) {
+      const notes = [];
+      if (!text) {
+        notes.push("先写出两三句真实内容，再开始改。");
+      } else {
+        if (text.length < 22) notes.push("内容偏短，再补一个动作、一个表情或一句心理活动。");
+        if (["我很感动", "非常有意义", "我学到了很多", "这让我难忘"].some(p => text.includes(p))) {
+          notes.push("这句有点空，建议用具体细节代替抽象评价。");
+        }
+        if (!state.title.split("").slice(0, 4).some(ch => text.includes(ch))) {
+          notes.push("这段和题目连接还不够紧，可以把题目关键词写回句子里。");
+        }
+      }
+      state.feedback = notes.length ? notes : ["这一段已经比较切题，下一步可以增强段落之间的连接。"];
+    }
+
+    function buildPracticeTask() {
+      const tasks = {
+        topic: "先不要写全文，只用 1 句话说清楚你准备写什么。",
+        idea: "写出一句别人一看就懂的中心句。",
+        material: "列出 1 到 3 个最能支持中心的片段，弱材料先不要。",
+        structure: "把提纲写成分段笔记，每段只写一句任务说明。",
+        draft: getGuidanceLabel() === "弱引导"
+          ? "独立写出关键段，写完后只让我检查是否切题。"
+          : "先写开头或关键段，不求完整，但要有具体细节。",
+        feedback: "按反馈只改 1 到 2 处关键问题，不要一口气全改。",
+        review: "下次先独立完成提纲，再用它来检验自己是否真的学会了。"
+      };
+      state.currentTask = tasks[STAGES[state.stageIndex].key];
+    }
+
+    function addMessage(role, title, body, bullets = []) {
+      state.messages.push({ role, title, text: body, bullets });
+      renderConversation();
+    }
+
+    function renderConversation() {
+      DOM.conversation.innerHTML = "";
+      state.messages.forEach(msg => {
+        const article = document.createElement("article");
+        article.className = `message ${msg.role}`;
+        const bullets = msg.bullets.length
+          ? `<ul>${msg.bullets.map(item => `<li>${item}</li>`).join("")}</ul>`
+          : "";
+        article.innerHTML = `
+          <header>${msg.title}</header>
+          <p>${msg.text}</p>
+          ${bullets}
+        `;
+        DOM.conversation.appendChild(article);
+      });
+      DOM.conversation.scrollTop = DOM.conversation.scrollHeight;
+    }
+
+    function renderStageList() {
+      DOM.stageList.innerHTML = STAGES.map((stage, index) => `
+        <div class="stage-item ${index === state.stageIndex ? "active" : ""}">
+          <strong>${stage.label}</strong>
+          <span>${stage.detail}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderInspector() {
+      DOM.analysisPanel.textContent = buildAnalysis();
+      DOM.outlinePanel.innerHTML = state.outline.length
+        ? state.outline.map(item => `<li>${item}</li>`).join("")
+        : "<li>等待学生先给出题目方向。</li><li>再根据回答整理成开头、关键片段、结尾。</li>";
+      DOM.feedbackPanel.innerHTML = state.feedback.map(item => `<li>${item}</li>`).join("") || "<li>还没有反馈，先让学生说出自己的材料。</li>";
+      DOM.practicePanel.textContent = state.currentTask;
+    }
+
+    function renderHeader() {
+      const stage = STAGES[state.stageIndex];
+      DOM.workspaceTitle.textContent = `${state.title} · ${stage.label}训练`;
+      DOM.workspaceSummary.textContent = buildAnalysis();
+      DOM.stageStat.textContent = stage.label;
+      DOM.guidanceStat.textContent = getGuidanceLabel();
+      DOM.lengthStat.textContent = `${getTargetLength()} 字`;
+      DOM.dependencyBar.style.width = `${Math.round(state.dependencyScore * 100)}%`;
+      DOM.dependencyText.textContent = state.dependencyScore >= 0.7
+        ? "当前提示依赖度较高，系统会先强引导。"
+        : state.dependencyScore >= 0.45
+          ? "正在过渡到半放手模式，开始要求学生先自己作答。"
+          : "当前提示依赖度较低，系统会更多安排独立练习。";
+    }
+
+    function renderAll() {
+      renderStageList();
+      renderHeader();
+      renderInspector();
+      renderConversation();
+    }
+
+    function openSession() {
+      state.stageIndex = 0;
+      state.title = DOM.titleInput.value.trim() || "那一次，我真感动";
+      state.age = Number(DOM.ageInput.value);
+      state.level = DOM.levelInput.value;
+      state.dependencyScore = state.level === "beginner" ? 0.8 : state.level === "developing" ? 0.58 : 0.32;
+      state.messages = [];
+      state.outline = [];
+      state.feedback = [];
+      buildPracticeTask();
+      addMessage(
+        "agent",
+        "Agent · 审题",
+        `这是一道关于“${state.title}”的训练。今天我不会直接给你范文，我会先帮你把题目拆开，再一步步带你完成思路。`,
+        stageQuestions("topic")
+      );
+      renderAll();
+    }
+
+    function advanceSession(studentText) {
+      addMessage("student", "Student", studentText);
+
+      if (studentText.includes("直接帮我写") || studentText.includes("给我范文")) {
+        buildOutlineFromMessages();
+        state.feedback = ["已切回训练模式：只提供提纲、追问和局部示范，不提供整篇代写。"];
+        state.currentTask = "先自己写 2 到 3 句，我再帮你看哪里更具体、哪里更切题。";
+        addMessage(
+          "agent",
+          "Agent · 防依赖",
+          "这次训练的目标是学会写法，不是我替你交作业。我先帮你搭一个结构草图，你再写其中一段。",
+          state.outline
+        );
+        renderAll();
+        return;
+      }
+
+      if (STAGES[state.stageIndex].key === "material" || STAGES[state.stageIndex].key === "structure") {
+        buildOutlineFromMessages();
+      }
+
+      if (STAGES[state.stageIndex].key === "draft" || STAGES[state.stageIndex].key === "feedback") {
+        buildFeedback(studentText);
+      }
+
+      if (state.stageIndex < STAGES.length - 1) {
+        state.stageIndex += 1;
+      }
+
+      if (STAGES[state.stageIndex].key === "review") {
+        state.dependencyScore = Math.max(0.22, state.dependencyScore - 0.14);
+      }
+
+      buildPracticeTask();
+      const stage = STAGES[state.stageIndex];
+      const bullets = stage.key === "feedback"
+        ? state.feedback
+        : stage.key === "structure" || stage.key === "draft"
+          ? state.outline
+          : stageQuestions(stage.key);
+
+      const lead = {
+        idea: "现在进入立意阶段，把你真正想表达的意思压成一句中心句。",
+        material: "接下来只挑最有用的材料，不要把所有事情都写进去。",
+        structure: "我先把你前面的回答整理成结构草图，你再检查有没有跑题。",
+        draft: "思路已经差不多了，现在开始写最关键的一段，不求全文。",
+        feedback: "先改最关键的问题。切题和具体永远排在语言华丽前面。",
+        review: "这一轮已经完成。现在只复盘方法，准备下次更少依赖我。"
+      }[stage.key] || buildAnalysis();
+
+      addMessage(`agent`, `Agent · ${stage.label}`, lead, bullets);
+      renderAll();
+    }
+
+    DOM.startButton.addEventListener("click", openSession);
+    DOM.demoButton.addEventListener("click", () => {
+      DOM.titleInput.value = "我读懂了坚持";
+      DOM.ageInput.value = "15";
+      DOM.levelInput.value = "proficient";
+      openSession();
+    });
+    DOM.sendButton.addEventListener("click", () => {
+      const text = DOM.replyInput.value.trim();
+      if (!text) return;
+      DOM.replyInput.value = "";
+      advanceSession(text);
+    });
+    DOM.replyInput.addEventListener("keydown", event => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+        DOM.sendButton.click();
+      }
+    });
+
+    openSession();
+  </script>
+</body>
+</html>
